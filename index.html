@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Appointment manager</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="static/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+    <script src="static/html5shiv.min.js"></script>
+    <script src="static/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container">
+    <form id="new_appointment_form" method="post" action="new-appointment" onkeypress="newAppointment(event)">
+        <div class="row btn-group" role="group">
+            <button type="button" class="btn btn-success" id="newaddbtn" onclick="newAppointment(false)">New</button>
+            <div id="add_appointment" style="display:none">
+                <button type="button" class="btn btn-danger" onclick="cancelNewAppointment()">Cancel</button>
+                <br><br>
+                <div class="form-inline">
+                    <b>Date:</b> <input type="text" class="form-control" name="date" id="form_date"
+                                        placeholder="2018-01-31"><br>
+                    <b>Time:</b> <input type="text" class="form-control" name="time" id="form_time"
+                                        placeholder="13:54:00"><br>
+                    <b>Description:</b> <input type="text" class="form-control" name="desc" id="form_desc"
+                                               placeholder="Details of appointment"><br>
+                </div>
+            </div>
+        </div>
+    </form>
+    <br><br>
+    <form class="form-inline" action="javascript:getAppointments()">
+        <input type="text" id="desc_search" class="form-control" name="appointmentdesc">
+        <button class="btn btn-primary" type="button" onclick="getAppointments()">Search</button>
+    </form>
+    <div class="row">
+        <span id="no_appointment_message" style="display:block">You have no appointments scheduled yet.</span>
+        <span id="appointment_table" style="display:none">
+            <table class="table table-bordered">
+				<thead>
+				<tr>
+					<th>Appointment time</th>
+					<th>Appointment details</th>
+				</tr>
+				</thead>
+				<tbody id="table_body"></tbody>
+			</table>
+        </span>
+    </div>
+</div>
+
+<!-- Bootstrap core JavaScript
+    ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="static/jquery.min.js"></script>
+<script src="static/jquery2.min.js"></script>
+<script src="static/js/bootstrap.min.js"></script>
+<script src="static/docs.min.js"></script>
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="static/ie10-viewport-bug-workaround.js"></script>
+<script>
+    function newAppointment(e) {
+        if (typeof e === 'object') {
+            if (e.keyCode == 13 && newButton.innerHTML != "New") {
+                document.forms["new_appointment_form"].submit();
+            }
+        } else {
+            newButton = document.getElementById('newaddbtn');
+            if (newButton.innerHTML == "New") {
+                newButton.innerHTML = "Add";
+                document.getElementById('add_appointment').setAttribute('style', "display:block");
+            } else {
+                document.forms["new_appointment_form"].submit();
+            }
+        }
+    }
+
+    function cancelNewAppointment() {
+        document.getElementById('add_appointment').setAttribute('style', "display:none");
+        newButton.innerHTML = "New";
+    }
+
+    function getAppointments() {
+        search = document.getElementById( "desc_search" ).value;
+
+        if (!search.length) {
+            $.post("get-appointments-ajax", {}, processAppointments);
+        } else {
+            $.post("get-appointments-ajax", {'search': search}, processAppointments);
+        }
+    }
+
+    function processAppointments(json) {
+        if (!json.length) {
+            document.getElementById("no_appointment_message").setAttribute("style", "display:block");
+            document.getElementById("appointment_table").setAttribute("style", "display:none");
+            return;
+        } else {
+            document.getElementById("no_appointment_message").setAttribute("style", "display:none");
+            document.getElementById("appointment_table").setAttribute("style", "display:block");
+        }
+
+        table = "";
+        for (var i = 0; i < json.length; i++) {
+            table += "<tr>\n<td>";
+            table += json[i][0];
+            table += "</td>\n<td>";
+            table += json[i][1]
+            table += "</td>\n</tr>\n";
+        }
+
+        document.getElementById('table_body').innerHTML = table;
+    }
+
+    $('document').ready(getAppointments());
+</script>
+</body>
+</html>

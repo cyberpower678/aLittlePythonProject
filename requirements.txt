@@ -1,0 +1,2 @@
+Flask==0.12.2
+pysqlite==2.8.3
